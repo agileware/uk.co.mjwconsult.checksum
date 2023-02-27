@@ -44,9 +44,11 @@
       // x/event/register?reset=1&action=preview&id=88&cid=8685&cs=2b77aacfaa03c941391137782a897653_1677503168_168
       // x/event/register?reset=1&action=preview&id=88
       let opts = await CRM.api4('Event', 'get', {
-        select: ["title"],
+        select: ["title", "start_date"],
         where: [
-          ["registration_start_date", "<=", "today"],
+          ["OR", [
+            ["registration_start_date", "IS NULL"], ["registration_start_date", "<=", "today"]]
+          ],
           ["is_online_registration", "=", true],
           ["is_active", "=", true],
           ["start_date", ">", "today"]
@@ -56,7 +58,7 @@
       opts.forEach(row => {
         const li = document.createElement('option');
         li.setAttribute('value', row.id);
-        li.textContent = row.title;
+        li.textContent = row.start_date.substring(0, 10) + ' ' + row.title;
         els.selectEventID.append(li);
       });
 
