@@ -79,6 +79,13 @@ class CRM_Checksum_ExtensionUtil {
 
 use CRM_Checksum_ExtensionUtil as E;
 
+function _checksum_civix_mixin_polyfill() {
+  if (!class_exists('CRM_Extension_MixInfo')) {
+    $polyfill = __DIR__ . '/mixin/polyfill.php';
+    (require $polyfill)(E::LONG_NAME, E::SHORT_NAME, E::path());
+  }
+}
+
 /**
  * (Delegated) Implements hook_civicrm_config().
  *
@@ -91,9 +98,9 @@ function _checksum_civix_civicrm_config(&$config = NULL) {
   }
   $configured = TRUE;
 
-  $template =& CRM_Core_Smarty::singleton();
+  $template = CRM_Core_Smarty::singleton();
 
-  $extRoot = dirname(__FILE__) . DIRECTORY_SEPARATOR;
+  $extRoot = __DIR__ . DIRECTORY_SEPARATOR;
   $extDir = $extRoot . 'templates';
 
   if (is_array($template->template_dir)) {
@@ -105,19 +112,7 @@ function _checksum_civix_civicrm_config(&$config = NULL) {
 
   $include_path = $extRoot . PATH_SEPARATOR . get_include_path();
   set_include_path($include_path);
-}
-
-/**
- * (Delegated) Implements hook_civicrm_xmlMenu().
- *
- * @param $files array(string)
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_xmlMenu
- */
-function _checksum_civix_civicrm_xmlMenu(&$files) {
-  foreach (_checksum_civix_glob(__DIR__ . '/xml/Menu/*.xml') as $file) {
-    $files[] = $file;
-  }
+  _checksum_civix_mixin_polyfill();
 }
 
 /**
@@ -130,6 +125,7 @@ function _checksum_civix_civicrm_install() {
   if ($upgrader = _checksum_civix_upgrader()) {
     $upgrader->onInstall();
   }
+  _checksum_civix_mixin_polyfill();
 }
 
 /**
@@ -170,6 +166,7 @@ function _checksum_civix_civicrm_enable() {
       $upgrader->onEnable();
     }
   }
+  _checksum_civix_mixin_polyfill();
 }
 
 /**
@@ -426,18 +423,6 @@ function _checksum_civix_fixNavigationMenuItems(&$nodes, &$maxNavID, $parentID) 
     if (isset($nodes[$origKey]['child']) && is_array($nodes[$origKey]['child'])) {
       _checksum_civix_fixNavigationMenuItems($nodes[$origKey]['child'], $maxNavID, $nodes[$origKey]['attributes']['navID']);
     }
-  }
-}
-
-/**
- * (Delegated) Implements hook_civicrm_alterSettingsFolders().
- *
- * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_alterSettingsFolders
- */
-function _checksum_civix_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
-  $settingsDir = __DIR__ . DIRECTORY_SEPARATOR . 'settings';
-  if (!in_array($settingsDir, $metaDataFolders) && is_dir($settingsDir)) {
-    $metaDataFolders[] = $settingsDir;
   }
 }
 
