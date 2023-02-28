@@ -140,7 +140,6 @@
   function getBaseURl(path, query) {
     let urlBase = CRM.url(path, query || {}, 'front');
     if (!urlBase.match(/^https?:\/\//)) {
-      console.log(urlBase, "does not sart http");
       urlBase = window.location.origin + urlBase;
     }
     urlBase += (urlBase.indexOf('?') > -1) ? '&' : '?';
